@@ -685,4 +685,579 @@
                             <i class="fa-solid fa-flask text-2xl text-purple-400"></i>
                             <span class="text-xs font-bold">2. Laboratorija (LIS)</span>
                         </button>
-                        <button onclick="izaberiTipUputa('Stacionarni')" class="bg-gray-900 border border-red-500 p-4 rounded-lg text-center flex flex-col items-center justify-center space-y-2 text-
+                        <button onclick="izaberiTipUputa('Stacionarni')" class="bg-gray-900 border border-red-500 p-4 rounded-lg text-center flex flex-col items-center justify-center space-y-2 text-white hover:bg-gray-850">
+                            <i class="fa-solid fa-bed text-2xl text-red-400"></i>
+                            <span class="text-xs font-bold">3. Stacionar / Prijem</span>
+                        </button>
+                    </div>
+
+                    <div id="uput-dinamicka-polja" class="bg-gray-900 p-4 rounded-lg border border-gray-700 space-y-4">
+                        <p class="text-xs text-gray-500 italic text-center">Izaberite tip uputa iznad kako biste generisali specifične parametre.</p>
+                    </div>
+                </div>
+            `;
+            document.getElementById("main-content").innerHTML = html;
+        }
+
+        function izaberiTipUputa(tip) {
+            let container = document.getElementById("uput-dinamicka-polja");
+            let p = DB.pacijenti.find(x => x.id === DB.trenutniPacijentId);
+            
+            let html = `<h4 class="text-sm font-bold text-white border-b border-gray-800 pb-1">Parametri za: ${tip} uput</h4>`;
+            
+            if (tip === "Specijalistički") {
+                html += `
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Specijalistička Grana:</label>
+                        <select id="u_spec_grana" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm">
+                            <option value="Kardiologija">Kardiologija (Poliklinika Klinički Centar)</option>
+                            <option value="Endokrinologija">Endokrinologija</option>
+                            <option value="Neurologija">Neurologija</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Razlog upućivanja / Napomena:</label>
+                        <input type="text" id="u_napomena" placeholder="npr. Potrebno mišljenje kardiologa i UZ srca zbog visoke hipertenzije" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm">
+                    </div>
+                `;
+            } else if (tip === "Laboratorijski") {
+                html += `
+                    <div class="space-y-2">
+                        <label class="block text-xs text-gray-400 font-semibold">Označite željene panele analiza za LIS integraciju:</label>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center space-x-2 bg-gray-800 p-2 rounded cursor-pointer"><input type="checkbox" id="l_kks" checked class="rounded text-blue-500"> <span>KKS (Kompletna krvna slika)</span></label>
+                            <label class="flex items-center space-x-2 bg-gray-800 p-2 rounded cursor-pointer"><input type="checkbox" id="l_bio" checked class="rounded text-blue-500"> <span>Biohemija (Urea, Kreatinin, AST, ALT)</span></label>
+                            <label class="flex items-center space-x-2 bg-gray-800 p-2 rounded cursor-pointer"><input type="checkbox" id="l_lip" class="rounded text-blue-500"> <span>Lipidni status (Holesterol, Trigliceridi)</span></label>
+                            <label class="flex items-center space-x-2 bg-gray-800 p-2 rounded cursor-pointer"><input type="checkbox" id="l_urin" checked class="rounded text-blue-500"> <span>Urin sa sedimentom</span></label>
+                        </div>
+                    </div>
+                `;
+            } else if (tip === "Stacionarni") {
+                html += `
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Uputna Dijagnoza za Hospitalizaciju:</label>
+                        <input type="text" id="u_stac_dg" value="I25 - Hronična ishemijska bolest srca" class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Indikacija za ležanje:</label>
+                        <textarea id="u_stac_ind" rows="2" placeholder="npr. Progresivna angina pektoris, nestabilno stanje, monitoring." class="w-full bg-gray-800 border border-gray-700 rounded p-2 text-white text-sm"></textarea>
+                    </div>
+                `;
+            }
+
+            html += `<button onclick="emitujUputInbaza('${tip}')" class="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded font-bold text-sm mt-2 transition shadow">Zavedi i Potpiši Uput digitalno</button>`;
+            container.innerHTML = html;
+        }
+
+        function emitujUputInbaza(tip) {
+            let p = DB.pacijenti.find(x => x.id === DB.trenutniPacijentId);
+            let noviUput = {
+                id: "U-OZ2-" + Math.floor(Math.random() * 90000 + 10000),
+                pacijentId: p.id,
+                pacijentIme: `${p.ime} ${p.prezime}`,
+                tip: tip,
+                datum: new Date().toLocaleString("sr-RS"),
+                status: "Aktivan / Prosleđen",
+                detalji: {}
+            };
+
+            if (tip === "Specijalistički") {
+                noviUput.detalji = { grana: document.getElementById("u_spec_grana").value, napomena: document.getElementById("u_napomena").value };
+            } else if (tip === "Laboratorijski") {
+                noviUput.detalji = { kks: document.getElementById("l_kks").checked, biohemija: document.getElementById("l_bio").checked, urin: document.getElementById("l_urin").checked };
+                // Automatska simulacija LIS-a u pozadini nakon 5 sekundi (za potrebe skladištenja i rada aplikacije)
+                simulirajLaboratorijskiUredjaj(noviUput.id);
+            } else if (tip === "Stacionarni") {
+                noviUput.detalji = { dg: document.getElementById("u_stac_dg").value, indikacija: document.getElementById("u_stac_ind").value };
+            }
+
+            DB.uputi.unshift(noviUput);
+            sacuvajUBazu();
+            upisiAuditLog(`KREIRAN_UPUT_${tip.toUpperCase()}`, `Generisan digitalni obrazac OZ2, prosleđen u podsistem. ID: ${noviUput.id}`, p.id);
+            alert(`Uput ${tip} uspešno kreiran i digitalno potpisan.`);
+            prikaziLekarskiPanel();
+        }
+
+        function simulirajLaboratorijskiUredjaj(uputId) {
+            setTimeout(() => {
+                let uput = DB.uputi.find(x => x.id === uputId);
+                if (uput) {
+                    uput.status = "Završen (LIS integrisan)";
+                    let p = DB.pacijenti.find(x => x.id === uput.pacijentId);
+                    
+                    // Ubaci veštačke rezultate merenja mašine u istoriju pacijenta
+                    p.istorija.unshift({
+                        datum: new Date().toLocaleString("sr-RS"),
+                        lekar: "Sistem (LIS - Automatski Analizator)",
+                        anamneza: "Integrisano očitavanje bar-koda epruvete preko HL7 FHIR protokola.",
+                        status_praesens: `Leukociti: 7.4 (4-10), Eritrociti: 4.8 (4.1-5.5), Hemoglobin: 105 L (110-180) [CRVENO], Sećer u krvi: 6.1 (3.9-6.1)`,
+                        dg: "LAB-NALAZ",
+                        terapija: "Nema (Laboratorijski izveštaj prosleđen izabranom lekaru)"
+                    });
+                    sacuvajUBazu();
+                    upisiAuditLog("LIS_AUTOMATSKA_ANALIZA", `Analizator očitao barkod za uput ${uputId}, rezultati upisani u karton automatski.`, p.id);
+                }
+            }, 3000);
+        }
+
+        // =========================================================================
+        // 4. MODUL: LEKAR SPECIJALISTA (PRIJEM UPUTA, KONSULTACIJE, STACIONAR)
+        // =========================================================================
+        function prikaziSpecijalistickiPanel() {
+            let aktivniUputi = DB.uputi.filter(x => x.tip === "Specijalistički" && x.status === "Aktivan / Prosleđen");
+            
+            let html = `
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-user-shield text-purple-400 mr-2"></i>Kardiološka Poliklinika - Panel Specijaliste Konsultanta</h2>
+                    
+                    <div class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md">
+                        <h3 class="text-md font-bold text-gray-200 border-b border-gray-700 pb-2">Lista "Prosleđeni pacijenti" po OZ2 obrascima</h3>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="w-full text-left text-sm text-gray-300">
+                                <thead class="bg-gray-700 text-xs text-gray-400 uppercase">
+                                    <tr>
+                                        <th class="p-3">Datum Uputa</th>
+                                        <th class="p-3">Pacijent</th>
+                                        <th class="p-3">Uputna Grana / Napomena</th>
+                                        <th class="p-3 text-right">Akcija</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-700">
+                                    ${aktivniUputi.map(u => `
+                                        <tr class="hover:bg-gray-750">
+                                            <td class="p-3 font-mono text-xs">${u.datum}</td>
+                                            <td class="p-3 font-semibold text-white">${u.pacijentIme}</td>
+                                            <td class="p-3 text-xs"><strong class="text-blue-400">${u.detalji.grana}</strong><br><span class="text-gray-400">${u.detalji.napomena}</span></td>
+                                            <td class="p-3 text-right">
+                                                <button onclick="otvoriSubspecijalistickiPregled('${u.id}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-bold transition">
+                                                    <i class="fa-solid fa-stethoscope mr-1"></i> Otvori pregled
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="4" class="p-4 text-center text-gray-500">Nema novih prosleđenih uputa na vašem panelu.</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById("main-content").innerHTML = html;
+        }
+
+        function otvoriSubspecijalistickiPregled(uputId) {
+            let uput = DB.uputi.find(x => x.id === uputId);
+            let p = DB.pacijenti.find(x => x.id === uput.pacijentId);
+            DB.trenutniPacijentId = p.id;
+            proveriAlergijskiBanner();
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-gray-900 p-3 rounded border border-gray-700 text-xs grid grid-cols-2 gap-2">
+                        <div>Pacijent: <strong class="text-white text-sm">${p.ime} ${p.prezime}</strong></div>
+                        <div>Alergije: <strong class="text-red-500 text-sm">${p.alergije}</strong></div>
+                        <div class="col-span-2">Uputna ind: <span class="italic text-gray-400">${uput.detalji.napomena}</span></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 mb-1">Subspecijalistički Nalaz i Mišljenje:</label>
+                        <textarea id="spec_nalaz" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm" placeholder="Uraditi ultrazvuk srca. Vidljiv hipertrofični kardiomiopatični status leve komore..."></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Predložena Terapija:</label>
+                            <input type="text" id="spec_terapija" placeholder="Neka modifikacija, npr. Concor 5mg 1+0+0" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Nova Dijagnoza Specijaliste:</label>
+                            <input type="text" id="spec_dg" value="I25.1 - Ishemijska bolest srca sa aterosklerozom" class="w-full bg-gray-900 border border-gray-700 rounded p-2 text-white text-sm">
+                        </div>
+                    </div>
+                    <button onclick="zaključiSubspecijalističkiKrug('${uputId}')" class="w-full bg-purple-600 text-white font-bold p-2 rounded text-sm hover:bg-purple-700 transition">Zatvori Krug i Pošalji Nazad Izabranom Lekaru</button>
+                </div>
+            `;
+            otvoriModal("Subspecijalistički Konsultativni Pregled", html);
+        }
+
+        function zaključičiSubspecijalističkiKrug(uputId) {
+            let uput = DB.uputi.find(x => x.id === uputId);
+            let p = DB.pacijenti.find(x => x.id === uput.pacijentId);
+            
+            let nalaz = document.getElementById("spec_nalaz").value;
+            let terapija = document.getElementById("spec_terapija").value;
+            let dg = document.getElementById("spec_dg").value;
+
+            if(!nalaz) { alert("Unesite nalaz!"); return; }
+
+            // Upisivanje u primarni karton
+            p.istorija.unshift({
+                datum: new Date().toLocaleString("sr-RS"),
+                lekar: "Dr Jelena Kardio (Specijalista Kardiologije)",
+                anamneza: "Konzilijarni/Subspecijalistički kardiološki pregled po uputu " + uputId,
+                status_praesens: nalaz,
+                dg: dg,
+                terapija: terapija
+            });
+
+            uput.status = "Završen (Mišljenje dato)";
+            sacuvajUBazu();
+            upisiAuditLog("SPECIJALISTA_ZATVORIO_KRUG", `Zatvorena štafeta pacijenta, mišljenje vraćeno izabranom lekaru sa notifikacijom.`, p.id);
+            closeModal();
+            prikaziSpecijalistickiPanel();
+        }
+
+        // --- HOSPITALIZACIJA I UPRAVLJANJE KREVETIMA ---
+        function prikaziStacionar() {
+            let html = `
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-bed-pulse text-red-500 mr-2"></i>Bed Management & Odeljenje Hospitalizacije</h2>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        ${DB.stacionar.krevati.map(k => {
+                            let pacijentTekst = "Slobodan Krevet";
+                            let p = null;
+                            if(k.pacijentId) {
+                                p = DB.pacijenti.find(x => x.id === k.pacijentId);
+                                pacijentTekst = p ? `${p.ime} ${p.prezime}` : "Zauzet";
+                            }
+                            return `
+                                <div class="p-4 rounded-xl border flex flex-col justify-between h-32 transition duration-200 ${k.status === 'Slobodan' ? 'bg-green-950/40 border-green-700 text-green-400' : 'bg-red-950/40 border-red-700 text-red-400'}">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-xs font-mono font-bold">Krevet #${k.broj}</span>
+                                        <i class="fa-solid fa-bed text-xl"></i>
+                                    </div>
+                                    <div class="text-sm font-bold text-white truncate">${pacijentTekst}</div>
+                                    <div class="text-right">
+                                        ${k.status === 'Slobodan' ? 
+                                            `<button onclick="otvoriPrijemNaStacionar(${k.broj})" class="text-xs bg-green-700 text-white font-bold px-2 py-1 rounded hover:bg-green-600">Prijem</button>` :
+                                            `<button onclick="otpustiSaStacionara(${k.broj})" class="text-xs bg-red-700 text-white font-bold px-2 py-1 rounded hover:bg-red-600">Otpusti</button>`
+                                        }
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById("main-content").innerHTML = html;
+        }
+
+        function otvoriPrijemNaStacionar(brojKreveta) {
+            let aktivniUputi = DB.uputi.filter(x => x.tip === "Stacionarni" && x.status === "Aktivan / Prosleđen");
+            
+            if(aktivniUputi.length === 0) {
+                alert("Nema aktivnih stacionarnih uputa (OZ2) od strane izabranih lekara za realizaciju hospitalizacije.");
+                return;
+            }
+
+            let html = `
+                <div class="space-y-4">
+                    <label class="block text-xs text-gray-400 font-semibold">Izaberite pacijenta sa validnim stacionarnim uputom:</label>
+                    <select id="stac_prijem_uput_id" class="w-full bg-gray-900 border border-gray-700 p-2 rounded text-white text-sm">
+                        ${aktivniUputi.map(u => `<option value="${u.id}">${u.pacijentIme} (Uput: ${u.id})</option>`).join('')}
+                    </select>
+                    <button onclick="izrsiDodeluKreveta(${brojKreveta})" class="w-full bg-green-600 font-bold p-2 rounded text-sm text-white">Potvrdi Alokaciju Kreveta i Otvori Istoriju Bolenja (IB)</button>
+                </div>
+            `;
+            otvoriModal(`Prijem na odeljenje u Krevet #${brojKreveta}`, html);
+        }
+
+        function izrsiDodeluKreveta(brojKreveta) {
+            let uputId = document.getElementById("stac_prijem_uput_id").value;
+            let uput = DB.uputi.find(x => x.id === uputId);
+            
+            let krevet = DB.stacionar.krevati.find(k => k.broj === brojKreveta);
+            krevet.pacijentId = uput.pacijentId;
+            krevet.status = "Zauzet";
+            
+            uput.status = "Završen (Pacijent Hospitalizovan)";
+            
+            sacuvajUBazu();
+            upisiAuditLog("HOSPITALIZACIJA_DODELA_KREVETA", `Pacijent raspoređen u krevet #${brojKreveta}. Otvoren pod-karton Istorije Bolenja (IB).`, uput.pacijentId);
+            closeModal();
+            prikaziStacionar();
+        }
+
+        function otpustiSaStacionara(brojKreveta) {
+            let krevet = DB.stacionar.krevati.find(k => k.broj === brojKreveta);
+            let p = DB.pacijenti.find(x => x.id === krevet.pacijentId);
+
+            // Generisanje otpusne liste
+            p.istorija.unshift({
+                datum: new Date().toLocaleString("sr-RS"),
+                lekar: "Dežurni lekar odeljenja",
+                anamneza: "OTPUSNA LISTA SA STACIONARNOG LEČENJA",
+                status_praesens: `Pacijent ležao u krevetu #${brojKreveta}. Stanje sanirano. Vitalno stabilan na otpustu.`,
+                dg: "Z48 - Postoperativno ili posthospitalizaciono praćenje",
+                terapija: "Preporučuje se nastavak kućne terapije po nalazu izabranog lekara."
+            });
+
+            krevet.pacijentId = null;
+            krevet.status = "Slobodan";
+            
+            sacuvajUBazu();
+            upisiAuditLog("OTPST_STACIONAR", "Pacijent otpušten sa odeljenja, automatska otpusna lista prosleđena u EZK.", p.id);
+            prikaziStacionar();
+        }
+
+        // =========================================================================
+        // 5. MODUL: APOTEKA I ERX (E-RECEPTI, UPRAVLJANJE LAGEROM)
+        // =========================================================================
+        function prikaziApoteku() {
+            let html = `
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-prescription-bottle-medical text-teal-400 mr-2"></i>Centralna Bolnička Apoteka i Magacin Lekova</h2>
+                    
+                    <div class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md">
+                        <h3 class="text-sm font-bold text-gray-200 border-b border-gray-700 pb-2">Lagerska Lista i Kritične Zalihe</h3>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="w-full text-left text-sm text-gray-300">
+                                <thead class="bg-gray-700 text-xs text-gray-400 uppercase">
+                                    <tr>
+                                        <th class="p-3">Naziv Leka</th>
+                                        <th class="p-3">Tip Jedinice</th>
+                                        <th class="p-3">Trenutno Stanje</th>
+                                        <th class="p-3">Kritična Količina</th>
+                                        <th class="p-3 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-700">
+                                    ${DB.apoteka.map(a => {
+                                        let jeKritično = a.kolicina <= a.kritični_nivo;
+                                        return `
+                                            <tr class="hover:bg-gray-750">
+                                                <td class="p-3 font-semibold text-white">${a.naziv}</td>
+                                                <td class="p-3 text-xs">${a.tip}</td>
+                                                <td class="p-3 font-mono font-bold ${jeKritično ? 'text-red-400':'text-green-400'}">${a.kolicina}</td>
+                                                <td class="p-3 font-mono text-gray-500">${a.kritični_nivo}</td>
+                                                <td class="p-3 text-right">
+                                                    ${jeKritično ? 
+                                                        `<span class="bg-red-900/50 text-red-400 border border-red-700 text-xs px-2 py-0.5 rounded font-extrabold animate-pulse"><i class="fa-solid fa-triangle-exclamation mr-1"></i> HITNA NABAVKA</span>` : 
+                                                        `<span class="bg-green-900/50 text-green-400 border border-green-700 text-xs px-2 py-0.5 rounded font-medium">Stabilno</span>`
+                                                    }
+                                                </td>
+                                            </tr>
+                                        `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById("main-content").innerHTML = html;
+        }
+
+        function generisiERecept(pacijentId) {
+            let p = DB.pacijenti.find(x => x.id === pacijentId);
+            let lek = document.getElementById("dr_terapija").value || "Enalapril 10mg";
+            
+            // Logički skini sa lagera ako lek postoji u šifarniku apoteke
+            let stavkaMagacina = DB.apoteka.find(x => lek.toLowerCase().includes(x.naziv.toLowerCase().split(' ')[0]));
+            if(stavkaMagacina) {
+                stavkaMagacina.kolicina = Math.max(0, stavkaMagacina.kolicina - 1);
+            }
+
+            sacuvajUBazu();
+            upisiAuditLog("PROPISAN_ERECEPT", `Generisan eRecept za lek: ${lek}. Sinhronizovano sa centralnim fondom eRx.`, pacijentId);
+            alert(`eRecept za lek [${lek}] je uspešno poslat u centralnu bazu i skinut sa lagera.`);
+            prikaziLekarskiPanel();
+        }
+
+        // =========================================================================
+        // 6. MODUL: FINANSIJE I AUTOMATSKO TARIFIRANJE (DRG / RFZO FAKTURE)
+        // =========================================================================
+        function prikaziFinansije() {
+            let html = `
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-calculator text-emerald-400 mr-2"></i> Finansijski Modul i DRF / RFZO Fakturisanje</h2>
+                    
+                    <div class="bg-gray-800 border border-gray-700 p-5 rounded-xl shadow-md">
+                        <div class="flex justify-between items-center border-b border-gray-700 pb-2 mb-4">
+                            <h3 class="text-md font-bold text-gray-200">Izveštaj o automatski generisanim fakturama na osnovu MKB-10 koda</h3>
+                            <button onclick="slanjeFakturaRFZO()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3 py-2 rounded shadow transition">Pošalji mesečnu fakturu u RFZO server</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-300">
+                                <thead class="bg-gray-700 text-xs text-gray-400 uppercase">
+                                    <tr>
+                                        <th class="p-3">Broj Fakture</th>
+                                        <th class="p-3">Pacijent</th>
+                                        <th class="p-3">Glavna Dg</th>
+                                        <th class="p-3">DRG Težina</th>
+                                        <th class="p-3 text-right">Potraživanje od Fonda</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-700">
+                                    ${DB.fakture.map(f => `
+                                        <tr class="hover:bg-gray-750">
+                                            <td class="p-3 font-mono text-xs text-yellow-400 font-bold">${f.id}</td>
+                                            <td class="p-3 font-medium text-white">${f.pacijent}<br><span class="text-xs text-gray-500">${f.jmbg}</span></td>
+                                            <td class="p-3 font-mono text-xs">${f.glavna_dg}</td>
+                                            <td class="p-3 font-mono">${f.drg_koef}</td>
+                                            <td class="p-3 text-right font-mono font-bold text-green-400">${f.iznos_rfzo.toLocaleString("sr-RS")} RSD</td>
+                                        </tr>
+                                    `).join('') || '<tr><td colspan="5" class="p-4 text-center text-gray-500">Nema zatvorenih medicinskih slučajeva sa generisanim fakturama za tekući period.</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById("main-content").innerHTML = html;
+        }
+
+        function slanjeFakturaRFZO() {
+            if(DB.fakture.length === 0) { alert("Nema faktura za slanje."); return; }
+            upisiAuditLog("FINANSIJE_RFZO_BATCH_SEND", `Poslat paket od ${DB.fakture.length} elektronskih faktura u državni trezor zdravstvenog osiguranja.`);
+            DB.fakture = [];
+            sacuvajUBazu();
+            alert("Sve fakture su elektronski potpisane i poslate u RFZO. Status: Likvidirano.");
+            prikaziFinansije();
+        }
+
+        // =========================================================================
+        // 7. BEZBEDNOST: AUDIT LOG (TRAGOVI REVIZIJE) & ADMIN PANEL
+        // =========================================================================
+        function prikaziAuditLog() {
+            let html = `
+                <div class="space-y-6">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-shield-halved text-red-500 mr-2"></i>Kriptografski Sigurnosni Audit Log (Nepromenjivi tragovi revizije)</h2>
+                    <p class="text-xs text-gray-400 bg-gray-900 border border-gray-800 p-3 rounded-lg"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i> Svaka akcija, pregled kartona, promena leka ili klik u sistemu ostavlja trajan i neobrisiv trag sa zabeleženom IP adresom i vremenskim pecatom u skladu sa Zakonom o zaštiti podataka o ličnosti.</p>
+                    <div class="bg-gray-800 border border-gray-700 p-4 rounded-xl shadow-md">
+                        <div class="overflow-x-auto max-h-[65vh] overflow-y-auto">
+                            <table class="w-full text-left text-xs text-gray-300 font-mono">
+                                <thead class="bg-gray-700 text-gray-400 uppercase sticky top-0">
+                                    <tr>
+                                        <th class="p-2">Vreme (Timestamp)</th>
+                                        <th class="p-2">Uloga</th>
+                                        <th class="p-2">IP Adresa</th>
+                                        <th class="p-2">Događaj / Akcija</th>
+                                        <th class="p-2">Detalji Operacije</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-700">
+                                    ${DB.auditLogs.map(l => `
+                                        <tr class="hover:bg-gray-750">
+                                            <td class="p-2 text-gray-400 whitespace-nowrap">${l.timestamp}</td>
+                                            <td class="p-2 font-bold ${l.korisnik === 'ADMIN' ? 'text-red-400':'text-blue-400'}">${l.korisnik}</td>
+                                            <td class="p-2 text-gray-500">${l.ip}</td>
+                                            <td class="p-2 text-yellow-400 font-bold">${l.akcija}</td>
+                                            <td class="p-2 text-white truncate max-w-md" title="${l.detalji}">${l.detalji}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById("main-content").innerHTML = html;
+        }
+
+        function prikaziAdminPanel() {
+            let html = `
+                <div class="space-y-6 max-w-xl mx-auto">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-database text-yellow-500 mr-2"></i>Sistemski Admin Panel</h2>
+                    <div class="bg-gray-800 border border-gray-700 p-6 rounded-xl shadow-md space-y-4 text-center">
+                        <p class="text-sm text-gray-300">Ukoliko želite da restartujete sistem i vratite sve baze podataka na fabrička podešavanja (Seed data), kliknite na dugme ispod.</p>
+                        <button onclick="obrisiSveIRestartuj()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-lg text-sm transition"><i class="fa-solid fa-trash-can mr-2"></i> Fabrički Reset Kompletnog Lokalog Storage-a</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById("main-content").innerHTML = html;
+        }
+
+        function obrisiSveIRestartuj() {
+            if(confirm("PAŽNJA! Ovo će nepovratno obrisati sve unete pacijente, vitalne parametre, upute i audit logove iz memorije pretraživača. Nastaviti?")) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        }
+
+        // =========================================================================
+        // 8. TEMPLATE ZA ŠTAMPANJE, PDF ARHIVU I QR VERIFIKACIJU
+        // =========================================================================
+        function printLekarskiIzvestaj(pacijentId, pregledObj) {
+            let p = DB.pacijenti.find(x => x.id === pacijentId);
+            
+            // Generisanje unikatnog hash-a za simulaciju digitalnog pečata / QR provere
+            let randomHash = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            
+            let htmlPrint = `
+                <div class="bg-white text-black p-8 rounded-lg shadow-2xl max-w-3xl mx-auto font-sans" id="printarea">
+                    <div class="flex justify-between items-start border-b-2 border-black pb-4">
+                        <div>
+                            <h2 class="text-xl font-extrabold uppercase tracking-tight">Kliničko-Bolnički Centar "NEXUS"</h2>
+                            <p class="text-xs">Ulica Doktora Medicinskog 12, Beograd</p>
+                            <p class="text-xs">PIB: 102938475 | Tel: +381 11 555 333</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="bg-black text-white px-2 py-1 text-xs font-bold uppercase tracking-widest mb-1">E-IZVEŠTAJ</div>
+                            <p class="text-xs font-mono">ID-DOK: ${randomHash.substring(0,8).toUpperCase()}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 my-6 text-sm bg-gray-100 p-3 rounded border border-gray-300">
+                        <div>
+                            <p class="text-xs text-gray-600 uppercase font-bold">Pacijent:</p>
+                            <p class="font-bold text-md">${p.ime} ${p.prezime}</p>
+                            <p class="text-xs font-mono">JMBG: ${p.jmbg} | LBO: ${p.lbo}</p>
+                            <p class="text-xs font-bold text-red-700">Alergije: ${p.alergije}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-600 uppercase font-bold">Ordinirao / Potpisao:</p>
+                            <p class="font-bold">${pregledObj.lekar}</p>
+                            <p class="text-xs">Datum i vreme: ${pregledObj.datum}</p>
+                            <p class="text-xs font-mono">Faktura/DRG: Generisano</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 my-6 text-sm leading-relaxed min-h-[150px]">
+                        <div>
+                            <h4 class="font-bold border-b border-gray-300 uppercase text-xs text-gray-700 mb-1">Anamnestički podaci i glavni razlog dolaska:</h4>
+                            <p class="text-gray-900">${pregledObj.anamneza}</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold border-b border-gray-300 uppercase text-xs text-gray-700 mb-1">Status Praesens i klinički nalaz:</h4>
+                            <p class="text-gray-900">${pregledObj.status_praesens}</p>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 pt-2">
+                            <div class="col-span-1">
+                                <h4 class="font-bold border-b border-gray-300 uppercase text-xs text-gray-700">Glavna Dijagnoza:</h4>
+                                <p class="text-md font-mono font-bold text-black">${pregledObj.dg}</p>
+                            </div>
+                            <div class="col-span-2">
+                                <h4 class="font-bold border-b border-gray-300 uppercase text-xs text-gray-700">Propisana Terapija:</h4>
+                                <p class="text-md font-bold text-green-800">${pregledObj.terapija}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t-2 border-black pt-4 flex justify-between items-center mt-12 bg-gray-50 p-3 rounded">
+                        <div class="flex items-center space-x-3">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://bolnica.rs/verify/doc?id=${randomHash}" alt="QR Verifikacija" class="w-16 h-16 border border-gray-400 p-1 bg-white">
+                            <div>
+                                <p class="text-xs font-bold text-gray-900"><i class="fa-solid fa-shield-halved mr-1"></i> KRIPTOGRAFSKA QR VERIFIKACIJA</p>
+                                <p class="text-[10px] text-gray-500 max-w-sm">Skeniranjem ovog koda digitalna verzija dokumenta se učitava direktno iz bezbedne PDF/A arhive centralnog servera.</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="inline-block border border-dashed border-gray-400 p-2 text-[10px] text-gray-500 uppercase font-mono tracking-tighter">
+                                Elektronski Potpisano<br>Bez Pečata po čl. 9 ZEK
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center pt-4">
+                    <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded shadow-lg text-sm"><i class="fa-solid fa-print mr-2"></i> Pošalji na lokalni laserski štampač</button>
+                </div>
+            `;
+            
+            otvoriModal("Generisani Medicinski Dokument - Pregled i Štampa", htmlPrint);
+            upisiAuditLog("PRINT_TO_PDF", `Generisan PDF šablon za štampu sa QR kodom. Enkriptovana kopija bačena u Cold Storage arhivu. ID: ${randomHash.substring(0,6).toUpperCase()}`, pacijentId);
+        }
+
+        // --- POKRETANJE PRILIKOM UČITAVANJA ---
+        window.onload = initApp;
+    </script>
+</body>
+</html>
