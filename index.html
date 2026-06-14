@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedCore HIS - Napredni Bolnički Informacioni Sistem</title>
+    <title>MedCore HIS - Kompletan Bolnički Sistem</title>
     <style>
         /* ==========================================================================
-           1. GLOBALNI STILOVI I PROMENLJIVE (SVETLI REŽIM - LIGHT MODE)
+           1. GLOBALNI STILOVI (SVETLI REŽIM - LIGHT MODE)
            ========================================================================== */
         :root {
             --bg-main: #f4f6f9;
@@ -20,9 +20,7 @@
             --success: #198754;
             --success-hover: #157347;
             --danger: #dc3545;
-            --warning: #ffc107;
-            --info: #0dcaf0;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             --radius: 6px;
         }
 
@@ -41,7 +39,7 @@
         }
 
         /* ==========================================================================
-           2. STRUKTURA I LAYOUT (Aplikacioni okvir)
+           2. LAYOUT I NAVIGACIJA (SA SELEKTOROM ULOGA)
            ========================================================================== */
         .app-wrapper {
             display: flex;
@@ -49,7 +47,6 @@
             min-height: 100vh;
         }
 
-        /* Top Navigacija */
         .top-navbar {
             background-color: var(--bg-panel);
             border-bottom: 1px solid var(--border-color);
@@ -61,7 +58,6 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
         }
 
         .brand {
@@ -86,7 +82,6 @@
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--primary);
-            letter-spacing: -0.5px;
         }
 
         .nav-meta {
@@ -95,35 +90,26 @@
             gap: 20px;
         }
 
-        .role-badge {
-            background-color: #e8f0fe;
-            color: var(--primary);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            border: 1px solid #d2e3fc;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .role-badge::before {
-            content: "";
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            background-color: var(--success);
-            border-radius: 50%;
-        }
-
         .system-time {
             font-size: 0.875rem;
             color: var(--text-muted);
             font-variant-numeric: tabular-nums;
         }
 
-        /* Glavni radni prostor */
+        /* Otključan i funkcionalan selektor uloga */
+        .role-selector {
+            background-color: #e8f0fe;
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: 1px solid #d2e3fc;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* Radni prostor */
         .main-content {
             display: flex;
             flex: 1;
@@ -134,7 +120,6 @@
             width: 100%;
         }
 
-        /* Paneli levo i desno */
         .workspace-left {
             flex: 1.3;
             display: flex;
@@ -147,9 +132,9 @@
             display: flex;
             flex-direction: column;
             gap: 24px;
-            max-height: calc(100vh - 110px);
             position: sticky;
             top: 84px;
+            max-height: calc(100vh - 110px);
         }
 
         .panel {
@@ -175,9 +160,6 @@
             margin: 0;
             font-size: 1.1rem;
             font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         .panel-body {
@@ -187,7 +169,7 @@
         }
 
         /* ==========================================================================
-           3. KONTROLE, FORME I ELEMENTI INPUTA
+           3. FORME I POLJA (ČISTI DIZAJN)
            ========================================================================== */
         .form-grid {
             display: grid;
@@ -198,8 +180,6 @@
         .col-12 { grid-column: span 12; }
         .col-6  { grid-column: span 6; }
         .col-4  { grid-column: span 4; }
-        .col-3  { grid-column: span 3; }
-        .col-8  { grid-column: span 8; }
 
         .form-group {
             display: flex;
@@ -229,50 +209,42 @@
             outline: none;
         }
 
+        textarea {
+            height: auto;
+            min-height: 100px;
+            resize: vertical;
+        }
+
         input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
         }
 
-        textarea {
-            height: auto;
-            min-height: 110px;
-            resize: vertical;
-        }
-
-        /* Administrativni moduli (Potpis i faksimil) - Čist izgled, bez blokada */
-        .admin-bypass-banner {
-            background-color: #fff3cd;
-            border: 1px solid #ffe69c;
-            color: #664d03;
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            margin-bottom: 16px;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
         .section-divider {
             grid-column: span 12;
-            margin: 12px 0 4px 0;
-            padding-bottom: 6px;
+            margin: 10px 0 2px 0;
+            padding-bottom: 4px;
             border-bottom: 1px dashed var(--border-color);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 700;
             color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        /* ==========================================================================
-           4. DUGMAD I INTERAKTIVNI ELEMENTI
-           ========================================================================== */
+        /* Opcioni admin modul (ne blokira štampu) */
+        .admin-optional-box {
+            background-color: #f8f9fa;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-top: 10px;
+        }
+
+        /* Dugmad */
         .btn-container {
             display: flex;
             gap: 12px;
-            margin-top: 24px;
+            margin-top: 20px;
             justify-content: flex-end;
         }
 
@@ -280,183 +252,66 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
             font-weight: 600;
             font-size: 0.95rem;
-            padding: 10px 24px;
+            padding: 10px 20px;
             border-radius: 4px;
             border: 1px solid transparent;
             cursor: pointer;
-            text-align: center;
-            user-select: none;
         }
 
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
+        .btn-primary { background-color: var(--primary); color: white; }
         .btn-primary:hover { background-color: var(--primary-hover); }
-
-        .btn-success {
-            background-color: var(--success);
-            color: white;
-        }
+        .btn-success { background-color: var(--success); color: white; }
         .btn-success:hover { background-color: var(--success-hover); }
+        .btn-secondary { background-color: #6c757d; color: white; }
 
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .btn-secondary:hover { background-color: #5c636a; }
-
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-        }
-
-        /* ==========================================================================
-           5. TABELE I PRIKAZ ISTORIJE / PRETRAGE KARTONA
-           ========================================================================== */
-        .search-bar {
-            margin-bottom: 16px;
-            position: relative;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-        }
-
+        /* Tabela istorije */
+        .search-bar { margin-bottom: 12px; }
         table {
             width: 100%;
             border-collapse: collapse;
-            text-align: left;
             font-size: 0.9rem;
         }
-
-        th {
-            background-color: #f8f9fa;
-            color: #495057;
-            font-weight: 600;
-            padding: 12px;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        td {
-            padding: 12px;
+        th, td {
+            padding: 10px;
             border-bottom: 1px solid var(--border-color);
-            vertical-align: middle;
+            text-align: left;
         }
+        th { background-color: #f8f9fa; }
+        tr:hover { background-color: #f1f3f5; }
 
-        tr:hover {
-            background-color: #f1f3f5;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            border-radius: 4px;
-            text-transform: uppercase;
-        }
-
-        .badge-normal { background-color: #d1e7dd; color: #0f5132; }
-        .badge-warning { background-color: #fff3cd; color: #664d03; }
-        .badge-danger { background-color: #f8d7da; color: #842029; }
-
-        .action-icon-btn {
-            background: none;
-            border: none;
-            color: var(--primary);
-            cursor: pointer;
-            padding: 4px;
-            font-size: 1.1rem;
-        }
-        .action-icon-btn:hover { color: var(--primary-hover); }
-
-        /* Prikaz kada nema podataka */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-muted);
-        }
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 12px;
-            color: #dee2e6;
-        }
-
-        /* ==========================================================================
-           6. PROZOR ZA ŠTAMPU (PRINT PREVIEW MODAL UNUTAR STRANE)
-           ========================================================================== */
         .preview-pane {
             border: 1px solid var(--border-color);
             background: #fff;
-            padding: 30px;
-            border-radius: 4px;
-            min-height: 400px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+            padding: 25px;
+            min-height: 350px;
         }
 
         /* ==========================================================================
-           7. NAPREDNA PRINT DIKTATURA (KLJUČNO ZA ČISTU ŠTAMPU)
+           4. STILOVI OPTIMIZOVANI ISKLJUČIVO ZA FIZIČKU ŠTAMPU
            ========================================================================== */
         @media print {
             body, html {
                 background: #fff !important;
                 color: #000 !important;
-                font-size: 12pt;
             }
-
-            /* Sakrij sve sem kontejnera za pregled/štampu trenutnog kartona */
             .top-navbar,
             .workspace-left,
             .panel-header,
             .btn-container,
-            .admin-bypass-banner,
             .search-bar,
-            .table-responsive,
             .workspace-right .panel:not(#printPanel) {
                 display: none !important;
             }
-
-            .main-content {
-                display: block !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                max-width: 100% !important;
-            }
-
-            .workspace-right {
-                width: 100% !important;
-                position: static !important;
-                max-height: none !important;
-                box-shadow: none !important;
-                border: none !important;
-            }
-
-            #printPanel {
-                border: none !important;
-                box-shadow: none !important;
-                background: transparent !important;
-            }
-
-            .preview-pane {
-                border: none !important;
-                padding: 0 !important;
-                background: transparent !important;
-            }
-
-            /* Generisanje čistih linija za potpis na dnu papira */
+            .main-content { display: block !important; padding: 0 !important; margin: 0 !important; }
+            .workspace-right { width: 100% !important; max-height: none !important; position: static !important; }
+            #printPanel, .preview-pane { border: none !important; box-shadow: none !important; padding: 0 !important; }
             .print-footer-signatures {
                 display: flex !important;
                 justify-content: space-between;
-                margin-top: 80px !important;
-                border-top: none !important;
+                margin-top: 70px !important;
             }
-
             .print-sig-box {
                 width: 200px;
                 text-align: center;
@@ -466,16 +321,13 @@
             }
         }
 
-        .print-footer-signatures {
-            display: none;
-        }
+        .print-footer-signatures { display: none; }
     </style>
 </head>
 <body>
 
 <div class="app-wrapper">
 
-    <!-- Top Navigacija -->
     <header class="top-navbar">
         <div class="brand">
             <div class="brand-logo">M</div>
@@ -483,160 +335,135 @@
         </div>
         <div class="nav-meta">
             <div class="system-time" id="liveClock">00:00:00</div>
-            <div class="role-badge">Trijažna Sestra</div>
+            <select id="roleSwitch" class="role-selector" onchange="promeniUlogu()">
+                <option value="Sestra">👩‍⚕️ Trijažna Sestra</option>
+                <option value="Lekar">👨‍⚕️ Lekar Specijalista</option>
+                <option value="Načelnik">🏥 Načelnik Odeljenja</option>
+                <option value="Admin">⚙️ Sistem Administrator</option>
+            </select>
         </div>
     </header>
 
-    <!-- Glavni radni prostor -->
     <main class="main-content">
 
-        <!-- LEVA STRANA: Čista forma za direktan unos (Fokus na rad) -->
         <div class="workspace-left">
             <div class="panel">
                 <div class="panel-header">
                     <h2 class="panel-title">✍️ Unos Novog Zdravstvenog Kartona</h2>
                 </div>
                 <div class="panel-body">
-                    
-                    <div class="admin-bypass-banner">
-                        <span>⚡</span>
-                        <span><strong>Bypass sistem aktivan:</strong> Polja za potpis i faksimil su potpuno opciona. Dokumentacija se može generisati i štampati bez administrativnih kočnica.</span>
-                    </div>
-
-                    <form id="medicalRecordForm" autocomplete="off">
+                    <form id="medicalRecordForm">
                         <div class="form-grid">
                             
-                            <!-- Demografski podaci -->
-                            <div class="section-divider">1. Osnovni Podaci Pacijenta</div>
-                            
+                            <div class="section-divider">1. Podaci Pacijenta</div>
                             <div class="form-group col-6">
                                 <label for="p_name">Ime *</label>
-                                <input type="text" id="p_name" required placeholder="Unesite ime pacijenta">
+                                <input type="text" id="p_name" required placeholder="Ime">
                             </div>
-                            
                             <div class="form-group col-6">
                                 <label for="p_surname">Prezime *</label>
-                                <input type="text" id="p_surname" required placeholder="Unesite prezime pacijenta">
+                                <input type="text" id="p_surname" required placeholder="Prezime">
                             </div>
-
                             <div class="form-group col-6">
-                                <label for="p_jmbg">JMBG (13 cifara) *</label>
-                                <input type="text" id="p_jmbg" required placeholder="Unesite matični broj" maxlength="13">
+                                <label for="p_jmbg">JMBG *</label>
+                                <input type="text" id="p_jmbg" required placeholder="Matični broj" maxlength="13">
                             </div>
-
                             <div class="form-group col-6">
                                 <label for="p_dob">Datum Rođenja *</label>
                                 <input type="date" id="p_dob" required>
                             </div>
 
-                            <!-- Trijažni vitalni parametri -->
-                            <div class="section-divider">2. Vitalni Parametri i Anamneza</div>
-
+                            <div class="section-divider">2. Medicinski Nalaz</div>
                             <div class="form-group col-4">
-                                <label for="v_ta">Krvni Pritisak (mmHg)</label>
+                                <label for="v_ta">Pritisak (mmHg)</label>
                                 <input type="text" id="v_ta" placeholder="npr. 120/80">
                             </div>
-
                             <div class="form-group col-4">
                                 <label for="v_pulse">Puls (bpm)</label>
-                                <input type="number" id="v_pulse" placeholder="npr. 75" min="30" max="250">
+                                <input type="number" id="v_pulse" placeholder="npr. 72">
                             </div>
-
                             <div class="form-group col-4">
-                                <label for="v_temp">Telesna Temperatura (°C)</label>
+                                <label for="v_temp">Temperatura (°C)</label>
                                 <input type="text" id="v_temp" placeholder="npr. 36.6">
                             </div>
-
                             <div class="form-group col-12">
-                                <label for="v_complaints">Glavne Tegobe / Razlog Dolaska</label>
-                                <textarea id="v_complaints" placeholder="Detaljan opis pacijentovih simptoma, trajanja i trenutnog stanja..."></textarea>
+                                <label for="v_complaints">Tegobe / Anamneza</label>
+                                <textarea id="v_complaints" placeholder="Upišite simptome pacijenta..."></textarea>
                             </div>
 
+                            <div class="section-divider">3. Verifikacija (OPCIONO - Ne blokira štampu)</div>
                             <div class="form-group col-12">
-                                <label for="v_urgency">Stepen Hitnosti Prijema</label>
-                                <select id="v_urgency">
-                                    <option value="Zeleni">Zeleni (Nije hitno - standardna procedura)</option>
-                                    <option value="Žuti">Žuti (Potrebno praćenje - srednji stepen)</option>
-                                    <option value="Crveni">Crveni (Kritično stanje - hitna intervencija)</option>
-                                </select>
-                            </div>
-
-                            <!-- Administrativna autorizacija (POTPUNO OPCIONO) -->
-                            <div class="section-divider">3. Verifikacija Izveštaja</div>
-
-                            <div class="form-group col-6">
-                                <label for="a_facsimile">Broj Faksimila Lekara / Sestre (Nije obavezno)</label>
-                                <input type="text" id="a_facsimile" placeholder="Opcioni unos broja faksimila">
-                            </div>
-
-                            <div class="form-group col-6">
-                                <label for="a_signature">Digitalni Potpis ID (Nije obavezno)</label>
-                                <input type="text" id="a_signature" placeholder="Sistem dozvoljava štampu bez ovog ključa">
+                                <div class="admin-optional-box">
+                                    <div class="form-grid">
+                                        <div class="form-group col-6">
+                                            <label for="a_facsimile">Broj Faksimila (Nije obavezno)</label>
+                                            <input type="text" id="a_facsimile" placeholder="Slobodan unos / prazno">
+                                        </div>
+                                        <div class="form-group col-6">
+                                            <label for="a_signature">Potpis ID (Nije obavezno)</label>
+                                            <input type="text" id="a_signature" placeholder="Slobodan unos / prazno">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                         </div>
 
                         <div class="btn-container">
-                            <button type="button" class="btn btn-secondary" onclick="resetForm()">Resetuj formu</button>
-                            <button type="submit" class="btn btn-primary">Sačuj u bazu</button>
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('medicalRecordForm').reset()">Očisti</button>
+                            <button type="submit" class="btn btn-primary">Sačuvaj karton</button>
                         </div>
                     </form>
-
                 </div>
             </div>
 
-            <!-- Pretraga i lokalna istorija -->
             <div class="panel">
                 <div class="panel-header">
-                    <h2 class="panel-title">📋 Istorija unetih kartona u ovoj sesiji</h2>
+                    <h2 class="panel-title">📋 Istorija unetih kartona</h2>
                 </div>
                 <div class="panel-body">
                     <div class="search-bar">
-                        <input type="text" id="tableSearch" placeholder="🔍 Brza pretraga po JMBG-u ili Prezimenu..." oninput="filterRecordsTable()">
+                        <input type="text" id="tableSearch" placeholder="🔍 Brza pretraga po prezimenu ili JMBG-u..." oninput="filtrirajTabelu()">
                     </div>
-                    <div class="table-responsive">
-                        <table id="recordsTable">
-                            <thead>
-                                <tr>
-                                    <th>Pacijent</th>
-                                    <th>JMBG</th>
-                                    <th>Pritisak</th>
-                                    <th>Hitnost</th>
-                                    <th>Akcija</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                                <!-- Podaci se pune din JavaScript-a -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pacijent</th>
+                                <th>JMBG</th>
+                                <th>Pritisak</th>
+                                <th>Akcija</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <tr>
+                                <td colspan="4" style="text-align:center; color:#aaa; padding:20px;">Nema unetih kartona. Forma iznad je spremna za prvi unos.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- DESNA STRANA: Pregled za štampu i Instant štampač -->
         <div class="workspace-right">
             <div class="panel" id="printPanel">
                 <div class="panel-header">
-                    <h2 class="panel-title">🖨️ Generisani Dokument za Štampanje</h2>
-                    <button type="button" class="btn btn-success" onclick="triggerDirectPrint()">Pokreni Štampu</button>
+                    <h2 class="panel-title">🖨️ Dokument za štampanje</h2>
+                    <button type="button" class="btn btn-success" onclick="window.print()">Odštampaj karton</button>
                 </div>
                 <div class="panel-body">
                     <div class="preview-pane" id="documentPreview">
-                        <!-- Generisani tekst za papir -->
                         <div style="text-align: center; margin-bottom: 20px;">
-                            <h3 style="margin: 0; text-transform: uppercase;">Izveštaj Trijažne Službe</h3>
-                            <p style="margin: 5px 0; font-size: 0.85rem; color: #555;">Zdravstveni informacioni sistem MedCore</p>
-                            <hr style="border: none; border-bottom: 2px solid #000; margin-top: 15px;">
+                            <h3 style="margin:0; text-transform:uppercase;">Izveštaj Lekarskog Pregleda</h3>
+                            <p style="margin:5px 0; font-size:0.85rem; color:#555;">Sistem: MedCore HIS</p>
+                            <hr style="border:none; border-bottom:2px solid #000; margin-top:10px;">
                         </div>
                         <div id="previewContent">
-                            <p style="text-align: center; color: #aaa; margin-top: 50px;">Unesite podatke u formu sa leve strane i kliknite na "Sačuvaj u bazu" kako biste ovde izgenerisali čist dokument spreman za fizičku štampu.</p>
+                            <p style="text-align:center; color:#ccc; margin-top:40px;">Popunite formu levo i kliknite na "Sačuvaj karton" da se ovde izgeneriše čist tekst za štampač.</p>
                         </div>
 
-                        <!-- Nevidljive linije koje se pojavljuju isključivo na štampaču -->
                         <div class="print-footer-signatures">
-                            <div class="print-sig-box">Potpis trijažne sestre</div>
-                            <div class="print-sig-box">Faksimil lekara</div>
+                            <div class="print-sig-box">Potpis medicinskog osoblja</div>
+                            <div class="print-sig-box">M.P. Faksimil</div>
                         </div>
                     </div>
                 </div>
@@ -646,223 +473,105 @@
     </main>
 </div>
 
-<!-- ==========================================================================
-     8. JAVASCRIPT LOGIKA I ENGINE SISTEMA
-     ========================================================================== -->
 <script>
-    // Globalno stanje aplikacije u memoriji
-    let medicalRecordsDB = [];
+    let bazaKartona = [];
 
-    // Inicijalizacija aplikacije
     document.addEventListener("DOMContentLoaded", function() {
-        initClock();
-        loadFromLocalStorage();
-        
-        // Slušalac na formi za unos
+        // Pokretanje sata
+        setInterval(() => {
+            document.getElementById("liveClock").textContent = new Date().toLocaleTimeString("sr-RS");
+        }, 1000);
+
+        // Rukovanje formom
         document.getElementById("medicalRecordForm").addEventListener("submit", function(e) {
             e.preventDefault();
-            saveNewRecord();
+            
+            const noviKarton = {
+                id: Date.now(),
+                vreme: new Date().toLocaleString("sr-RS"),
+                ime: document.getElementById("p_name").value,
+                prezime: document.getElementById("p_surname").value,
+                jmbg: document.getElementById("p_jmbg").value,
+                dob: document.getElementById("p_dob").value,
+                ta: document.getElementById("v_ta").value || "Nije mereno",
+                puls: document.getElementById("v_pulse").value || "Nije mereno",
+                temp: document.getElementById("v_temp").value || "Nije mereno",
+                tegobe: document.getElementById("v_complaints").value || "Bez posebnih žalbi",
+                faksimil: document.getElementById("a_facsimile").value || "/ ",
+                potpis: document.getElementById("a_signature").value || "/ "
+            };
+
+            bazaKartona.unshift(noviKarton);
+            osveziTabelu();
+            izgenerisiPregledZaStampu(noviKarton);
+            alert("Karton uspešno unet! Dokument na desnoj strani je spreman za štampu.");
         });
     });
 
-    // Sat u gornjem desnom uglu
-    function initClock() {
-        const clockEl = document.getElementById("liveClock");
-        setInterval(() => {
-            const now = new Date();
-            clockEl.textContent = now.toLocaleTimeString("sr-RS");
-        }, 1000);
+    function osveziTabelu() {
+        const tbody = document.getElementById("tableBody");
+        if(bazaKartona.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#aaa; padding:20px;">Nema unetih kartona.</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = bazaKartona.map(k => `
+            <tr>
+                <td><strong>${k.prezime}</strong> ${k.ime}</td>
+                <td>${k.jmbg}</td>
+                <td>${k.ta}</td>
+                <td><button type="button" style="cursor:pointer;" onclick="prikaziKartonIzTabele(${k.id})">👁️</button></td>
+            </tr>
+        `).join("");
     }
 
-    // Funkcija za skupljanje podataka iz forme i čuvanje
-    function saveNewRecord() {
-        const record = {
-            id: 'REC-' + Date.now(),
-            timestamp: new Date().toLocaleString("sr-RS"),
-            name: document.getElementById("p_name").value.trim(),
-            surname: document.getElementById("p_surname").value.trim(),
-            jmbg: document.getElementById("p_jmbg").value.trim(),
-            dob: document.getElementById("p_dob").value,
-            ta: document.getElementById("v_ta").value.trim() || "Nije mereno",
-            pulse: document.getElementById("v_pulse").value.trim() || "Nije mereno",
-            temp: document.getElementById("v_temp").value.trim() || "Nije mereno",
-            complaints: document.getElementById("v_complaints").value.trim() || "Bez žalbi",
-            urgency: document.getElementById("v_urgency").value,
-            facsimile: document.getElementById("a_facsimile").value.trim() || "Nije uneto",
-            signature: document.getElementById("a_signature").value.trim() || "Nije potpisan elektronski"
-        };
-
-        // Guranje u niz (bazu)
-        medicalRecordsDB.unshift(record);
-        
-        // Sinhronizacija sa LocalStorage-om
-        saveToLocalStorage();
-        
-        // Ažuriranje interfejsa
-        renderRecordsTable();
-        updatePrintPreview(record);
-        
-        alert("Karton je uspešno kreiran i spreman za štampu sa desne strane ekrana!");
-    }
-
-    // Generisanje HTML-a za štampu unutar desnog panela
-    function updatePrintPreview(record) {
-        const previewContent = document.getElementById("previewContent");
-        
-        let urgencyBadgeColor = "#0f5132";
-        if(record.urgency === "Žuti") urgencyBadgeColor = "#664d03";
-        if(record.urgency === "Crveni") urgencyBadgeColor = "#842029";
-
-        previewContent.innerHTML = `
-            <table style="width:100%; border:none; margin-bottom: 20px; font-size: 11pt;">
+    function izgenerisiPregledZaStampu(k) {
+        document.getElementById("previewContent").innerHTML = `
+            <table style="width:100%; margin-bottom:20px; font-size:11pt;">
                 <tr>
-                    <td style="width:50%; border:none; padding: 4px 0;"><strong>Pacijent:</strong> ${record.surname} ${record.name}</td>
-                    <td style="width:50%; border:none; padding: 4px 0; text-align:right;"><strong>Datum unosa:</strong> ${record.timestamp}</td>
+                    <td><strong>Pacijent:</strong> ${k.prezime} ${k.ime}</td>
+                    <td style="text-align:right;"><strong>Datum/Vreme:</strong> ${k.vreme}</td>
                 </tr>
                 <tr>
-                    <td style="width:50%; border:none; padding: 4px 0;"><strong>JMBG:</strong> ${record.jmbg}</td>
-                    <td style="width:50%; border:none; padding: 4px 0; text-align:right;"><strong>Datum rođenja:</strong> ${record.dob}</td>
+                    <td><strong>JMBG:</strong> ${k.jmbg}</td>
+                    <td style="text-align:right;"><strong>Datum rođenja:</strong> ${k.dob}</td>
                 </tr>
             </table>
-
-            <h4 style="border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 8px; text-transform:uppercase; font-size: 10pt;">Vitalni Parametri</h4>
-            <table style="width:100%; border:1px solid #000; border-collapse:collapse; margin-bottom: 20px; text-align: center;">
-                <thead>
-                    <tr style="background-color: #f0f0f0;">
-                        <th style="border:1px solid #000; padding:6px; text-align:center;">Krvni Pritisak</th>
-                        <th style="border:1px solid #000; padding:6px; text-align:center;">Puls</th>
-                        <th style="border:1px solid #000; padding:6px; text-align:center;">Temperatura</th>
-                        <th style="border:1px solid #000; padding:6px; text-align:center;">Trijažna Grupa</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td style="border:1px solid #000; padding:8px;">${record.ta}</td>
-                        <td style="border:1px solid #000; padding:8px;">${record.pulse} ${record.pulse !== 'Nije mereno' ? 'bpm' : ''}</td>
-                        <td style="border:1px solid #000; padding:8px;">${record.temp} ${record.temp !== 'Nije mereno' ? '°C' : ''}</td>
-                        <td style="border:1px solid #000; padding:8px; font-weight:bold; color: ${urgencyBadgeColor};">${record.urgency}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h4 style="border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 8px; text-transform:uppercase; font-size: 10pt;">Anamnestički podaci i subjektivne tegobe</h4>
-            <div style="border: 1px solid #000; padding: 12px; min-height: 100px; margin-bottom: 20px; background: #fff; white-space: pre-wrap;">${record.complaints}</div>
-
-            <h4 style="border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 8px; text-transform:uppercase; font-size: 10pt;">Administrativni podaci</h4>
-            <table style="width:100%; border:none; font-size: 10pt;">
-                <tr>
-                    <td style="border:none; padding:4px 0;"><strong>Faksimil:</strong> ${record.facsimile}</td>
-                    <td style="border:none; padding:4px 0; text-align:right;"><strong>Potpis ID:</strong> ${record.signature}</td>
-                </tr>
-            </table>
+            <h4 style="border-bottom:1px solid #000; margin-bottom:5px; text-transform:uppercase;">Vitalni Parametri</h4>
+            <p>Pritisak: ${k.ta} | Puls: ${k.puls} | Temperatura: ${k.temp}</p>
+            <h4 style="border-bottom:1px solid #000; margin-bottom:5px; text-transform:uppercase;">Anamneza i Nalaz</h4>
+            <div style="min-height:80px; white-space:pre-wrap; border:1px solid #eee; padding:10px;">${k.tegobe}</div>
+            <h4 style="border-bottom:1px solid #000; margin-top:20px; margin-bottom:5px; text-transform:uppercase;">Verifikacija</h4>
+            <p>Faksimil: ${k.faksimil} | Elektronski Potpis ID: ${k.potpis}</p>
         `;
     }
 
-    // Rendereovanje donje tabele
-    function renderRecordsTable() {
+    function prikaziKartonIzTabele(id) {
+        const k = bazaKartona.find(item => item.id === id);
+        if(k) izgenerisiPregledZaStampu(k);
+    }
+
+    function filtrirajTabelu() {
+        const q = document.getElementById("tableSearch").value.toLowerCase();
+        const filtrirano = bazaKartona.filter(k => k.prezime.toLowerCase().includes(q) || k.jmbg.includes(q));
         const tbody = document.getElementById("tableBody");
-        if (medicalRecordsDB.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="empty-state">
-                        <div class="empty-state-icon">📂</div>
-                        Nema unetih kartona u trenutnoj sesiji.
-                    </td>
-                </tr>
-            `;
+        if(filtrirano.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:15px; color:#aaa;">Nema poklapanja.</td></tr>`;
             return;
         }
-
-        tbody.innerHTML = medicalRecordsDB.map(record => {
-            let badgeClass = "badge-normal";
-            if (record.urgency === "Žuti") badgeClass = "badge-warning";
-            if (record.urgency === "Crveni") badgeClass = "badge-danger";
-
-            return `
-                <tr>
-                    <td><strong>${record.surname}</strong> ${record.name}</td>
-                    <td style="font-family: monospace;">${record.jmbg}</td>
-                    <td>${record.ta}</td>
-                    <td><span class="badge ${badgeClass}">${record.urgency}</span></td>
-                    <td>
-                        <button class="action-icon-btn" onclick="loadRecordToPreview('${record.id}')" title="Učitaj u panel za štampu">👁️</button>
-                    </td>
-                </tr>
-            `;
-        }).join("");
+        tbody.innerHTML = filtrirano.map(k => `
+            <tr>
+                <td><strong>${k.prezime}</strong> ${k.ime}</td>
+                <td>${k.jmbg}</td>
+                <td>${k.ta}</td>
+                <td><button type="button" onclick="prikaziKartonIzTabele(${k.id})">👁️</button></td>
+            </tr>
+        `).join("");
     }
 
-    // Učitavanje izabranog kartona iz tabele u desni panel
-    function loadRecordToPreview(id) {
-        const record = medicalRecordsDB.find(r => r.id === id);
-        if (record) {
-            updatePrintPreview(record);
-            document.getElementById("printPanel").scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    // Filtriranje tabele kroz polje za pretragu
-    function filterRecordsTable() {
-        const query = document.getElementById("tableSearch").value.toLowerCase();
-        const filtered = medicalRecordsDB.filter(r => 
-            r.surname.toLowerCase().includes(query) || 
-            r.jmbg.toLowerCase().includes(query) ||
-            r.name.toLowerCase().includes(query)
-        );
-        
-        const tbody = document.getElementById("tableBody");
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#aaa;">Nema rezultata za pretragu.</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = filtered.map(record => {
-            let badgeClass = "badge-normal";
-            if (record.urgency === "Žuti") badgeClass = "badge-warning";
-            if (record.urgency === "Crveni") badgeClass = "badge-danger";
-
-            return `
-                <tr>
-                    <td><strong>${record.surname}</strong> ${record.name}</td>
-                    <td style="font-family: monospace;">${record.jmbg}</td>
-                    <td>${record.ta}</td>
-                    <td><span class="badge ${badgeClass}">${record.urgency}</span></td>
-                    <td>
-                        <button class="action-icon-btn" onclick="loadRecordToPreview('${record.id}')">👁️</button>
-                    </td>
-                </tr>
-            `;
-        }).join("");
-    }
-
-    // Okidač za sistemsku štampu
-    function triggerDirectPrint() {
-        window.print();
-    }
-
-    // Pražnjenje forme
-    function resetForm() {
-        document.getElementById("medicalRecordForm").reset();
-    }
-
-    // Perzistencija podataka kroz skladište pretraživača
-    function saveToLocalStorage() {
-        localStorage.setItem("medcore_records", JSON.stringify(medicalRecordsDB));
-    }
-
-    function loadFromLocalStorage() {
-        const data = localStorage.getItem("medcore_records");
-        if (data) {
-            medicalRecordsDB = JSON.parse(data);
-            renderRecordsTable();
-            if(medicalRecordsDB.length > 0) {
-                updatePrintPreview(medicalRecordsDB[0]);
-            }
-        } else {
-            renderRecordsTable();
-        }
+    function promeniUlogu() {
+        const uloga = document.getElementById("roleSwitch").value;
+        console.log("Uloga sistema promenjena na: " + uloga);
     }
 </script>
-
 </body>
 </html>
