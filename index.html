@@ -1,369 +1,476 @@
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MedCore HIS v3.0 - Kompletan Medicinski Modul</title>
-    <style>
-        /* ==========================================================================
-           1. CORE STILOVI (SVETLI PROFESIONALNI REŽIM)
-           ========================================================================== */
-        :root {
-            --bg-main: #f0f2f5;
-            --bg-panel: #ffffff;
-            --text-main: #1a1f2c;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --primary: #0284c7;
-            --primary-hover: #0369a1;
-            --success: #16a34a;
-            --success-hover: #15803d;
-            --warning: #ea580c;
-            --radius: 8px;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BIS / EHR Sistem</title>
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-main); margin: 0; padding: 0; }
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
 
-        /* Navigacija */
-        .navbar {
-            background-color: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            height: 65px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 30px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        .logo-area { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.3rem; color: var(--primary); }
-        .logo-icon { background: var(--primary); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        
-        /* Modul za promenu uloga */
-        .role-badge {
-            background: #e0f2fe;
-            color: var(--primary);
-            border: 1px solid #bae6fd;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            outline: none;
-        }
+body{
+background:#f4f6f8;
+}
 
-        /* ==========================================================================
-           2. ARHITEKTURA TABOVA (KLJUČ ZA FUNKCIONALNOST)
-           ========================================================================== */
-        .tabs-container {
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            padding: 0 30px;
-            gap: 10px;
-        }
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 15px 20px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .tab-btn:hover { color: var(--primary); }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+header{
+background:#1565c0;
+color:white;
+padding:15px;
+font-size:24px;
+font-weight:bold;
+}
 
-        /* Radni prostor */
-        .workspace {
-            display: flex;
-            padding: 30px;
-            gap: 30px;
-            max-width: 1600px;
-            margin: 0 auto;
-        }
-        .main-form-area { flex: 1.4; display: flex; flex-direction: column; gap: 25px; }
-        .print-preview-area { flex: 1; position: sticky; top: 120px; max-height: calc(100vh - 150px); }
+.container{
+padding:20px;
+}
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+.card{
+background:white;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
 
-        /* Paneli */
-        .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-        .panel-header { padding: 18px 24px; border-bottom: 1px solid var(--border); background: #fff; display: flex; justify-content: space-between; align-items: center; }
-        .panel-title { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; }
-        .panel-body { padding: 24px; }
+input,select,textarea{
+width:100%;
+padding:10px;
+margin-top:5px;
+margin-bottom:10px;
+border:1px solid #ccc;
+border-radius:6px;
+}
 
-        /* Grids i elementi formi */
-        .grid-12 { display: grid; grid-template-columns: repeat(12, 1fr); gap: 20px; }
-        .w-12 { grid-column: span 12; }
-        .w-6 { grid-column: span 6; }
-        .w-4 { grid-column: span 4; }
-        .w-3 { grid-column: span 3; }
+button{
+background:#1565c0;
+color:white;
+border:none;
+padding:10px 15px;
+border-radius:6px;
+cursor:pointer;
+}
 
-        .field-group { display: flex; flex-direction: column; gap: 6px; }
-        label { font-size: 0.85rem; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select, textarea {
-            width: 100%; height: 42px; padding: 8px 14px; font-size: 0.95rem;
-            border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: var(--text-main); outline: none;
-        }
-        textarea { height: 120px; resize: vertical; }
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
-        
-        .section-heading {
-            grid-column: span 12; margin: 15px 0 5px 0; padding-bottom: 6px;
-            border-bottom: 2px solid var(--bg-main); font-size: 0.95rem; font-weight: 700; color: var(--primary);
-        }
+button:hover{
+background:#0d47a1;
+}
 
-        /* Dugmad */
-        .actions-bar { display: flex; gap: 15px; margin-top: 25px; justify-content: flex-end; }
-        .btn { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; padding: 12px 28px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; border: 1px solid transparent; }
-        .btn-main { background: var(--primary); color: white; }
-        .btn-main:hover { background: var(--primary-hover); }
-        .btn-print { background: var(--success); color: white; }
-        .btn-print:hover { background: var(--success-hover); }
-        .btn-clear { background: #64748b; color: white; }
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
 
-        /* Stilovi papira za preview i štampu */
-        .paper-preview { background: #fff; border: 1px solid #cbd5e1; padding: 40px; min-height: 500px; box-shadow: inset 0 0 20px rgba(0,0,0,0.01); font-size: 11pt; line-height: 1.6; }
-        .paper-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 15px; }
-        .paper-section { margin-top: 20px; border-top: 1px dashed #cbd5e1; padding-top: 15px; }
-        .paper-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+th,td{
+border:1px solid #ddd;
+padding:8px;
+}
 
-        .print-only-footer { display: none; }
+th{
+background:#1565c0;
+color:white;
+}
 
-        /* ==========================================================================
-           3. STRICT MEDIA PRINT (ČISTA FIZIČKA ŠTAMPA BEZ VIŠKOVA)
-           ========================================================================== */
-        @media print {
-            body { background: #fff !important; color: #000 !important; }
-            .navbar, .tabs-container, .main-form-area, .panel-header, .actions-bar { display: none !important; }
-            .workspace { display: block !important; padding: 0 !important; margin: 0 !important; }
-            .print-preview-area { width: 100% !important; position: static !important; max-height: none !important; }
-            .panel { border: none !important; box-shadow: none !important; }
-            .paper-preview { border: none !important; padding: 0 !important; box-shadow: none !important; }
-            .print-only-footer { display: flex !important; justify-content: space-between; margin-top: 80px; }
-            .sig-line { width: 220px; text-align: center; border-top: 1px solid #000; padding-top: 5px; font-size: 10pt; }
-        }
-    </style>
+.allergy{
+color:red;
+font-weight:bold;
+}
+</style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo-area">
-            <div class="logo-icon">✚</div>
-            <div>MedCore Central HIS</div>
-        </div>
-        <div>
-            <select id="activeRole" class="role-badge" onchange="obvestiPromenuUloge()">
-                <option value="Lekar">👨‍⚕️ Dr. Milanović (Lekar Specijalista)</option>
-                <option value="Sestra">👩‍⚕️ Trijažna Sestra (Prijem)</option>
-                <option value="Admin">⚙️ IT Administrator sistema</option>
-            </select>
-        </div>
-    </nav>
+<header>
+BIS / EHR Sistem
+</header>
 
-    <div class="tabs-container">
-        <button class="tab-btn active" onclick="switchTab(event, 'tab-trijaza')">📋 1. Prijem i Vitalne Funkcije</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-pregled')">🩺 2. Lekarski Nalaz i Pregled</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-uputi')">📨 3. Uputi i Recepti</button>
-        <button class="tab-btn" onclick="switchTab(event, 'tab-zakazivanje')">📅 4. Zakazivanje i Termini</button>
-    </div>
+<div class="container">
 
-    <main class="workspace">
+<div class="card">
+<h2>Novi Pacijent</h2>
 
-        <div class="main-form-area">
-            
-            <div id="tab-trijaza" class="tab-content active">
-                <div class="panel">
-                    <div class="panel-header"><h3 class="panel-title">Otvaranje Kartona i Prijem Pacijenta</h3></div>
-                    <div class="panel-body">
-                        <div class="grid-12">
-                            <div class="section-heading">Matični Podaci</div>
-                            <div class="field-group w-6"><label>Ime pacijenta *</label><input type="text" id="t_ime" value="Marko"></div>
-                            <div class="field-group w-6"><label>Prezime pacijenta *</label><input type="text" id="t_prezime" value="Petrović"></div>
-                            <div class="field-group w-6"><label>JMBG *</label><input type="text" id="t_jmbg" value="1406985710023" maxlength="13"></div>
-                            <div class="field-group w-6"><label>Datum Rođenja *</label><input type="date" id="t_dob" value="1985-06-14"></div>
-                            
-                            <div class="section-heading">Inicijalni Vitalni Status (Sestra)</div>
-                            <div class="field-group w-4"><label>Krvni pritisak (mmHg)</label><input type="text" id="t_ta" value="130/85"></div>
-                            <div class="field-group w-4"><label>Puls (bpm)</label><input type="number" id="t_puls" value="78"></div>
-                            <div class="field-group w-4"><label>Temperatura (°C)</label><input type="text" id="t_temp" value="36.8"></div>
-                            <div class="field-group w-12"><label>Primarni razlog dolaska / Glavne tegobe</label><textarea id="t_tegobe">Pacijent se žali na jaku, tupu bol u predelu lumbalne kičme koja se širi niz desnu nogu. Tegobe traju tri dana, pojačavaju se prilikom sedenja i podizanja tereta.</textarea></div>
-                        </div>
-                        <div class="actions-bar">
-                            <button type="button" class="btn btn-main" onclick="procesuirajModul('trijaza')">Generiši Prijemni List</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<input id="jmbg" placeholder="JMBG">
 
-            <div id="tab-pregled" class="tab-content">
-                <div class="panel">
-                    <div class="panel-header"><h3 class="panel-title">Lekarski Izveštaj / Ambulantni Nalaz</h3></div>
-                    <div class="panel-body">
-                        <div class="grid-12">
-                            <div class="section-heading">Klinički Status i Tok Pregleda</div>
-                            <div class="field-group w-12"><label>Objektivan nalaz po sistemima</label><textarea id="doc_status">Svestan, orijentisan u vremenu i prostoru, febrilan. Pokretljivost lumbalne kičme izrazito ograničena u svim pravcima zbog bolnog spazma paravertebralne muskulature. Lazarevićev znak pozitivan desno na 45 stepeni. Neurološki nalaz: tetivni refleksi očuvani, bez ispada senzibiliteta.</textarea></div>
-                            
-                            <div class="section-heading">Klasifikacija Dijagnoze</div>
-                            <div class="field-group w-4"><label>MKB-10 Šifra dijagnoze</label><input type="text" id="doc_mkb" value="M54.5"></div>
-                            <div class="field-group w-8"><label>Latinski / Srpski naziv dijagnoze</label><input type="text" id="doc_diag" value="Lumbago cum sciatica (Bol u donjem delu leđa sa išijasom)"></div>
-                            
-                            <div class="section-heading">Terapijski Plan</div>
-                            <div class="field-group w-12"><label>Ordinirana terapija i savet lekara</label><textarea id="doc_terapija">1. Strogo mirovanje na ravnoj, tvrdoj podlozi naredna 3 dana.
-2. Amp. Diklofenak 75mg i.m. odmah (ordinirano u ambulanti).
-3. Tab. Ibuprofen 400mg 2x1 nakon jela, pp bolova.
-4. Tab. Midocalm 150mg 1x1 uveče za relaksaciju mišića.</textarea></div>
-                        </div>
-                        <div class="actions-bar">
-                            <button type="button" class="btn btn-main" onclick="procesuirajModul('pregled')">Generiši Izveštaj Lekara</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<input id="ime" placeholder="Ime">
 
-            <div id="tab-uputi" class="tab-content">
-                <div class="panel">
-                    <div class="panel-header"><h3 class="panel-title">Izdavanje Specijalističkih Uputa</h3></div>
-                    <div class="panel-body">
-                        <div class="grid-12">
-                            <div class="section-heading">Kreiranje Uputa</div>
-                            <div class="field-group w-6">
-                                <label>Uputna Ustanova / Klinički Centar</label>
-                                <select id="u_ustanova">
-                                    <option value="Institut za ortopedsko-hirurške bolesti Banjica">Institut za ortopediju Banjica</option>
-                                    <option value="Klinički Centar Srbije - Klinika za neurohirurgiju">KCS - Klinika za neurohirurgiju</option>
-                                    <option value="Zavod za radiologiju - Magnetna Rezonanca">Zavod za radiologiju (MR Lumbalne kičme)</option>
-                                </select>
-                            </div>
-                            <div class="field-group w-6">
-                                <label>Upućuje se na odeljenje / specijalnost</label>
-                                <select id="u_specijalnost">
-                                    <option value="Specijalistički pregled ortopeda">Specijalistički pregled ortopeda</option>
-                                    <option value="Pregled neurohirurga radi evaluacije operativnog lečenja">Pregled neurohirurga</option>
-                                    <option value="Dijagnostička procedura: MR i CT snimanje">Radiologija / Dijagnostika</option>
-                                </select>
-                            </div>
-                            <div class="field-group w-12"><label>Uputna dijagnoza i obrazloženje</label><textarea id="u_razlog">Upućuje se radi dopunske dijagnostike i daljeg specijalističkog tretmana zbog perzistentnog lumboišijalgijskog sindroma otpornog na standardnu analgetsku terapiju.</textarea></div>
-                        </div>
-                        <div class="actions-bar">
-                            <button type="button" class="btn btn-main" onclick="procesuirajModul('uputi')">Generiši Uput</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<input id="prezime" placeholder="Prezime">
 
-            <div id="tab-zakazivanje" class="tab-content">
-                <div class="panel">
-                    <div class="panel-header"><h3 class="panel-title">Elektronsko Zakazivanje Kontrolnih Pregleda</h3></div>
-                    <div class="panel-body">
-                        <div class="grid-12">
-                            <div class="section-heading">Podaci o Terminu</div>
-                            <div class="field-group w-6"><label>Datum zakazane kontrole</label><input type="date" id="z_datum" value="2026-06-21"></div>
-                            <div class="field-group w-6"><label>Vreme / Smena</label><input type="text" id="z_vreme" value="09:15 h"></div>
-                            <div class="field-group w-6">
-                                <label>Ordinirajući lekar za kontrolu</label>
-                                <select id="z_lekar">
-                                    <option value="Dr Milanović - Spec. opšte medicine">Dr Milanović - Spec. opšte medicine</option>
-                                    <option value="Prof. Dr Jovanović - Neuropsihijatar">Prof. Dr Jovanović - Neuropsihijatar</option>
-                                    <option value="Dr Petrović - Fizijatar">Dr Petrović - Fizijatar</option>
-                                </select>
-                            </div>
-                            <div class="field-group w-6"><label>Broj kabineta / ambulante</label><input type="text" id="z_kabinet" value="Ambulanta br. 4 (Prizemlje)"></div>
-                        </div>
-                        <div class="actions-bar">
-                            <button type="button" class="btn btn-main" onclick="procesuirajModul('zakazivanje')">Generiši Potvrdu o Zakazivanju</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<input id="alergije" placeholder="Alergije">
 
-        </div>
+<button onclick="dodajPacijenta()">
+Sačuvaj
+</button>
+</div>
 
-        <div class="print-preview-area">
-            <div class="panel">
-                <div class="panel-header">
-                    <h3 class="panel-title">🖨️ Pregled i Fizička Štampa</h3>
-                    <button type="button" class="btn btn-print" onclick="window.print()">Odštampaj Trenutni Dokument</button>
-                </div>
-                <div class="panel-body">
-                    <div class="paper-preview" id="printOutput">
-                        <div class="paper-header">
-                            <h2 style="margin: 0; text-transform: uppercase; font-size: 14pt; letter-spacing:1px;">Dom Zdravlja MedCore</h2>
-                            <p style="margin: 4px 0 0 0; font-size: 9pt; color: #444;">Zdravstveni informacioni sistem | Elektronski karton</p>
-                        </div>
-                        <div id="dynamicPaperContent">
-                            <p style="text-align: center; color: #94a3b8; margin-top: 60px;">Izaberite modul, popunite unose i kliknite na "Generiši" dugme kako bi se ovde učitao čist prepis spreman za štampač.</p>
-                        </div>
-                        
-                        <div class="print-only-footer">
-                            <div class="sig-line">Potpis lekara / sestre</div>
-                            <div class="sig-line">Mesto pečata ustanove</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="card">
+<h2>Pacijenti</h2>
 
-    </main>
+<table>
 
-    <script>
-        // Prebacivanje modula kroz tabove
-        function switchTab(evt, tabId) {
-            const contents = document.getElementsByClassName("tab-content");
-            for (let i = 0; i < contents.length; i++) {
-                contents[i].className = contents[i].className.replace(" active", "");
-            }
-            const buttons = document.getElementsByClassName("tab-btn");
-            for (let i = 0; i < buttons.length; i++) {
-                buttons[i].className = buttons[i].className.replace(" active", "");
-            }
-            document.getElementById(tabId).className += " active";
-            evt.currentTarget.className += " active";
-        }
+<thead>
+<tr>
+<th>JMBG</th>
+<th>Ime</th>
+<th>Prezime</th>
+<th>Alergije</th>
+</tr>
+</thead>
 
-        // Glavni procesor podataka - Spaja sve unose u čiste lekarske dokumente bez administrativnih kočnica
-        function procesuirajModul(tip) {
-            const ime = document.getElementById("t_ime").value;
-            const prezime = document.getElementById("t_prezime").value;
-            const jmbg = document.getElementById("t_jmbg").value;
-            const dob = document.getElementById("t_dob").value;
-            
-            const datumVremeSada = new Date().toLocaleString("sr-RS");
-            const papir = document.getElementById("dynamicPaperContent");
+<tbody id="listaPacijenata"></tbody>
 
-            // Kreiranje zajedničkog zaglavlja pacijenta za svaki dokument
-            let pacijentHeaderHTML = `
-                <div class="paper-grid">
-                    <div><strong>Pacijent:</strong> ${prezime} ${ime}</div>
-                    <div style="text-align:right;"><strong>Datum/Vreme:</strong> ${datumVremeSada}</div>
-                    <div><strong>JMBG:</strong> ${jmbg}</div>
-                    <div style="text-align:right;"><strong>Datum rođenja:</strong> ${dob}</div>
-                </div>
-                <hr style="border:none; border-bottom: 1px solid #000; margin: 15px 0;">
-            `;
+</table>
+</div>
 
-            // RENDEROVANJE DOKUMENTA U ZAVISNOSTI OD SELEKTOVANOG MODULA
-            if (tip === 'trijaza') {
-                const ta = document.getElementById("t_ta").value;
-                const puls = document.getElementById("t_puls").value;
-                const temp = document.getElementById("t_temp").value;
-                const tegobe = document.getElementById("t_tegobe").value;
+</div>
 
-                papir.innerHTML = `
-                    <div style="text-align:center; font-weight:bold; text-transform:uppercase; margin-bottom:15px; font-size:12pt;">Prijemni List i Trijažni Izveštaj</div>
-                    ${pacijentHeaderHTML}
-                    <h4 style="margin: 10px 0 5px 0; text-transform:uppercase; font-size:10pt;">1. Vitalni Parametri na Prijemu</h4>
-                    <p style="margin: 0 0 15px 0;">Krvni pritisak: <strong>${ta} mmHg</strong> &nbsp;|&nbsp; Puls: <strong>${puls} bpm</strong> &nbsp;|&nbsp; Telesna temperatura: <strong>${temp} °C</strong></p>
-                    <h4 style="margin: 10px 0 5px 0; text-transform:uppercase; font-size:10pt;">2. Razlog Prijema i Primarne Tegobe</h4>
-                    <div style="white-space: pre-wrap; background: #fafafa; padding: 10px; border: 1px solid #eee;">${tegobe}</div>
-                `;
-            }
+<script>
+
+let pacijenti =
+JSON.parse(
+localStorage.getItem("pacijenti")
+|| "[]"
+);
+
+function sacuvaj(){
+localStorage.setItem(
+"pacijenti",
+JSON.stringify(pacijenti)
+);
+}
+
+function prikaziPacijente(){
+
+let html="";
+
+pacijenti.forEach(p=>{
+
+html+=`
+<tr>
+<td>${p.jmbg}</td>
+<td>${p.ime}</td>
+<td>${p.prezime}</td>
+<td class="allergy">${p.alergije}</td>
+</tr>
+`;
+
+});
+
+document.getElementById(
+"listaPacijenata"
+).innerHTML=html;
+
+}
+
+function dodajPacijenta(){
+
+const p={
+jmbg:document.getElementById("jmbg").value,
+ime:document.getElementById("ime").value,
+prezime:document.getElementById("prezime").value,
+alergije:document.getElementById("alergije").value,
+vitalni:[],
+pregledi:[],
+uputi:[]
+};
+
+pacijenti.push(p);
+
+sacuvaj();
+
+prikaziPacijente();
+
+document.getElementById("jmbg").value="";
+document.getElementById("ime").value="";
+document.getElementById("prezime").value="";
+document.getElementById("alergije").value="";
+
+}
+
+prikaziPacijente();
+
+</script>
+
+</body>
+</html>
+<div class="card">
+<h2>Pacijenti</h2>
+...
+</div>
+<div class="card">
+
+<h2>Vitalni Parametri</h2>
+
+<select id="vitalPacijent"></select>
+
+<input id="pritisak" placeholder="Krvni pritisak">
+
+<input id="puls" placeholder="Puls">
+
+<input id="temperatura" placeholder="Temperatura">
+
+<input id="saturacija" placeholder="Saturacija">
+
+<button onclick="sacuvajVitalne()">
+Sačuvaj Vitalne
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Pregled Lekara (Draft)</h2>
+
+<select id="pregledPacijent"></select>
+
+<textarea
+id="anamneza"
+placeholder="Anamneza"
+></textarea>
+
+<textarea
+id="status"
+placeholder="Status"
+></textarea>
+
+<textarea
+id="terapija"
+placeholder="Terapija"
+></textarea>
+
+<button onclick="sacuvajPregled()">
+Sačuvaj Draft
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Karton Pacijenta</h2>
+
+<select id="kartonPacijent"
+onchange="prikaziKarton()">
+</select>
+
+<div id="kartonPrikaz"></div>
+
+</div>
+
+function osveziSelecte(){
+
+const ids=[
+"vitalPacijent",
+"pregledPacijent",
+"kartonPacijent"
+];
+
+ids.forEach(id=>{
+
+let html="";
+
+pacijenti.forEach((p,index)=>{
+
+html += `
+<option value="${index}">
+${p.ime} ${p.prezime}
+</option>
+`;
+
+});
+
+document.getElementById(id).innerHTML=html;
+
+});
+
+}
+
+function sacuvajVitalne(){
+
+const index=
+document.getElementById(
+"vitalPacijent"
+).value;
+
+const zapis={
+
+datum:new Date().toLocaleString(),
+
+pritisak:
+document.getElementById(
+"pritisak"
+).value,
+
+puls:
+document.getElementById(
+"puls"
+).value,
+
+temperatura:
+document.getElementById(
+"temperatura"
+).value,
+
+saturacija:
+document.getElementById(
+"saturacija"
+).value
+
+};
+
+pacijenti[index]
+.vitalni.push(zapis);
+
+sacuvaj();
+
+alert("Vitalni parametri sačuvani");
+
+}
+
+function sacuvajPregled(){
+
+const index=
+document.getElementById(
+"pregledPacijent"
+).value;
+
+const pregled={
+
+datum:new Date().toLocaleString(),
+
+statusPregleda:"DRAFT",
+
+anamneza:
+document.getElementById(
+"anamneza"
+).value,
+
+status:
+document.getElementById(
+"status"
+).value,
+
+terapija:
+document.getElementById(
+"terapija"
+).value
+
+};
+
+pacijenti[index]
+.pregledi.push(pregled);
+
+sacuvaj();
+
+alert("Draft pregled sačuvan");
+
+}
+
+function prikaziKarton(){
+
+const index=
+document.getElementById(
+"kartonPacijent"
+).value;
+
+const p=
+pacijenti[index];
+
+if(!p) return;
+
+let html=`
+
+<h3>
+${p.ime}
+${p.prezime}
+</h3>
+
+<p>
+JMBG:
+${p.jmbg}
+</p>
+
+<p class="allergy">
+Alergije:
+${p.alergije}
+</p>
+
+<hr>
+
+<h3>Vitalni Parametri</h3>
+
+`;
+
+p.vitalni.forEach(v=>{
+
+html+=`
+<p>
+${v.datum}
+|
+TA:
+${v.pritisak}
+|
+P:
+${v.puls}
+|
+T:
+${v.temperatura}
+|
+SpO2:
+${v.saturacija}
+</p>
+`;
+
+});
+
+html+="<hr><h3>Pregledi</h3>";
+
+p.pregledi.forEach(pr=>{
+
+html+=`
+
+<div style="
+border:1px solid #ddd;
+padding:10px;
+margin:10px 0;
+">
+
+<b>${pr.datum}</b>
+
+<br><br>
+
+<b>Status:</b>
+${pr.statusPregleda}
+
+<br><br>
+
+<b>Anamneza:</b>
+${pr.anamneza}
+
+<br><br>
+
+<b>Status:</b>
+${pr.status}
+
+<br><br>
+
+<b>Terapija:</b>
+${pr.terapija}
+
+</div>
+
+`;
+
+});
+
+document.getElementById(
+"kartonPrikaz"
+).innerHTML=html;
+
+}
+prikaziPacijente();
+prikaziPacijente();
+osveziSelecte();
+prikaziPacijente();
+prikaziPacijente();
